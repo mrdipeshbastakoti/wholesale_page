@@ -26,12 +26,8 @@
     .quick-delivered:hover{background:#2d8c50}
     #salesHistory th:nth-child(2),
     #salesHistory td:nth-child(2){display:none}
-    .account-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .login-id-note{font-size:12px;text-align:center;margin-top:4px}
     @media(max-width:760px){
       .quick-delivered{width:100%;flex-basis:100%;padding:13px 14px;font-size:14px}
-      .account-actions{gap:6px}
-      .account-actions .btn{padding:9px 10px}
     }
   </style>
 </head>
@@ -45,12 +41,11 @@
     <h1>Wholesale Manager</h1>
     <p class="muted centered">Orders, beer, customers, cans, kegs and delivery — all in one place.</p>
     <form id="loginForm" class="stack">
-      <label>ID<input id="email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="WildcatBrewing" required></label>
+      <label>Email<input id="email" type="email" autocomplete="email" required></label>
       <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
       <button class="btn primary" type="submit">Sign in</button>
     </form>
-    <div class="muted login-id-note">Use the Wildcat staff ID — no email needed.</div>
-    <div class="footer-note">Only approved Wildcat staff can open the dashboard.</div>
+    <div class="footer-note">Only approved Wildcat staff accounts can open the dashboard.</div>
   </div>
 </section>
 
@@ -61,7 +56,7 @@
         <img class="brand-logo" src="./assets/images/wildcat-logo.png" alt="Wildcat Beer Co. logo" />
         <div><div class="eyebrow">WILDCAT BREWING</div><div class="brand-title">Wholesale Manager</div><div class="brand-sub">Orders • Production • Sales</div></div>
       </div>
-      <div class="account-actions"><button id="changePassword" class="btn secondary" type="button">Change password</button><button id="logout" class="btn secondary">Sign out</button></div>
+      <button id="logout" class="btn secondary">Sign out</button>
     </div>
     <nav id="mainNav" class="main-nav">
       <button class="nav-btn active" data-page="overview">Overview</button>
@@ -192,80 +187,7 @@
   </form>
 </dialog>
 
-<dialog id="passwordDialog">
-  <div class="section-head"><div><div class="eyebrow">STAFF ACCESS</div><h2>Change password</h2></div><button id="closePassword" class="x" type="button">✕</button></div>
-  <form id="passwordForm" class="stack">
-    <p class="muted">Set the shared password for the Wildcat staff ID. The password is sent directly to Supabase and is never stored in this website code.</p>
-    <label>New password<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
-    <label>Confirm password<input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>
-    <button class="btn primary" type="submit">Save password</button>
-  </form>
-</dialog>
-
 <script>
-(function(){
-  const STAFF_ID = 'WildcatBrewing';
-  const BACKEND_EMAIL = 'jrdipeshbastakoti@gmail.com';
-
-  function localToast(message){
-    const t = document.getElementById('toast');
-    if (!t) return;
-    t.textContent = message;
-    t.classList.remove('hidden');
-    clearTimeout(window.__wildcatLocalToast);
-    window.__wildcatLocalToast = setTimeout(() => t.classList.add('hidden'), 2800);
-  }
-
-  const loginForm = document.getElementById('loginForm');
-  const loginId = document.getElementById('email');
-  if (loginForm && loginId) {
-    loginForm.addEventListener('submit', function(e){
-      const entered = loginId.value.trim();
-      if (entered.toLowerCase() !== STAFF_ID.toLowerCase()) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        localToast('Invalid ID or password');
-        return;
-      }
-      loginId.value = BACKEND_EMAIL;
-      setTimeout(() => { loginId.value = STAFF_ID; }, 0);
-    }, true);
-  }
-
-  window.addEventListener('load', () => {
-    const changeBtn = document.getElementById('changePassword');
-    const dialog = document.getElementById('passwordDialog');
-    const closeBtn = document.getElementById('closePassword');
-    const form = document.getElementById('passwordForm');
-    if (!changeBtn || !dialog || !closeBtn || !form) return;
-
-    changeBtn.onclick = () => {
-      form.reset();
-      dialog.showModal();
-    };
-    closeBtn.onclick = () => dialog.close();
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const p1 = document.getElementById('newPassword').value;
-      const p2 = document.getElementById('confirmPassword').value;
-      if (p1.length < 8) return localToast('Password must be at least 8 characters');
-      if (p1 !== p2) return localToast('Passwords do not match');
-
-      const client = supabase.createClient(
-        'https://gqbyigliedexvjyxshkb.supabase.co',
-        'sb_publishable_KWzE2eqCE4FY-15N6E1k6g_ITE7zqHI'
-      );
-      const {data:{session}} = await client.auth.getSession();
-      if (!session) return localToast('Please sign in first');
-      const {error} = await client.auth.updateUser({password:p1});
-      if (error) return localToast(error.message);
-      dialog.close();
-      form.reset();
-      localToast('Password updated');
-    });
-  });
-})();
-
 (function(){
   function addQuickDeliveredButtons(root=document){
     root.querySelectorAll('.order').forEach(card => {
