@@ -26,6 +26,7 @@
     .quick-delivered:hover{background:#2d8c50}
     #salesHistory th:nth-child(2),
     #salesHistory td:nth-child(2){display:none}
+    .login-id-note{font-size:12px;text-align:center;margin-top:-4px}
     @media(max-width:760px){
       .quick-delivered{width:100%;flex-basis:100%;padding:13px 14px;font-size:14px}
     }
@@ -41,11 +42,12 @@
     <h1>Wholesale Manager</h1>
     <p class="muted centered">Orders, beer, customers, cans, kegs and delivery — all in one place.</p>
     <form id="loginForm" class="stack">
-      <label>Email<input id="email" type="email" autocomplete="email" required></label>
+      <label>Staff ID<input id="email" type="text" autocomplete="username" placeholder="WildcatBrewing" required></label>
       <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
       <button class="btn primary" type="submit">Sign in</button>
+      <div class="muted login-id-note">Staff ID: WildcatBrewing</div>
     </form>
-    <div class="footer-note">Only approved Wildcat staff accounts can open the dashboard.</div>
+    <div class="footer-note">Only approved Wildcat staff can open the dashboard.</div>
   </div>
 </section>
 
@@ -188,6 +190,23 @@
 </dialog>
 
 <script>
+(function(){
+  const STAFF_ID = 'WildcatBrewing';
+  const AUTH_EMAIL = 'jrdipeshbastakoti@gmail.com';
+  window.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    const idInput = document.getElementById('email');
+    if (!form || !idInput) return;
+    form.addEventListener('submit', () => {
+      const typed = idInput.value.trim();
+      if (typed.toLowerCase() === STAFF_ID.toLowerCase()) {
+        idInput.value = AUTH_EMAIL;
+        setTimeout(() => { if (!document.getElementById('auth').classList.contains('hidden')) idInput.value = STAFF_ID; }, 0);
+      }
+    }, true);
+  });
+})();
+
 (function(){
   function addQuickDeliveredButtons(root=document){
     root.querySelectorAll('.order').forEach(card => {
