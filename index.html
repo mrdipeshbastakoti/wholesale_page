@@ -10,6 +10,22 @@
   <link rel="stylesheet" href="./assets/css/style.css?v=5" />
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./assets/js/app.js?v=5"></script>
+  <style>
+    .flow button[data-status="delivered"]{display:none}
+    .quick-delivered{
+      background:#257a43;
+      color:#fff;
+      border:1px solid #3f9b5f;
+      flex:1;
+      min-width:170px;
+      font-weight:900;
+      box-shadow:0 8px 18px rgba(37,122,67,.22)
+    }
+    .quick-delivered:hover{background:#2d8c50}
+    @media(max-width:760px){
+      .quick-delivered{width:100%;flex-basis:100%;padding:13px 14px;font-size:14px}
+    }
+  </style>
 </head>
 <body>
 <div id="toast" class="toast hidden"></div>
@@ -165,5 +181,36 @@
     <button class="btn primary" type="submit">Save beer</button>
   </form>
 </dialog>
+
+<script>
+(function(){
+  function addQuickDeliveredButtons(root=document){
+    root.querySelectorAll('.order').forEach(card => {
+      const isDelivered = [...card.querySelectorAll('.tag')].some(tag => tag.textContent.trim() === 'Delivered');
+      if (isDelivered) return;
+      const actions = card.querySelector('.actions');
+      if (!actions || actions.querySelector('.quick-delivered')) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn quick-delivered';
+      button.textContent = '✓ Mark Delivered';
+      button.onclick = () => {
+        const id = card.dataset.id;
+        if (typeof window.updateOrderStatus === 'function') window.updateOrderStatus(id,'delivered');
+      };
+      actions.prepend(button);
+    });
+  }
+
+  window.addEventListener('load', () => {
+    addQuickDeliveredButtons();
+    ['orders','priorityOrders'].forEach(id => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      new MutationObserver(() => addQuickDeliveredButtons(target)).observe(target,{childList:true,subtree:true});
+    });
+  });
+})();
+</script>
 </body>
 </html>
