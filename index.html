@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./assets/css/light.css?v=1" />
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./assets/js/app.js?v=5"></script>
-  <script defer src="./assets/js/customer-select.js?v=1"></script>
+  <script defer src="./assets/js/customer-select.js?v=2"></script>
   <style>
     .flow button[data-status="delivered"]{display:none}
     .quick-delivered{
@@ -151,6 +151,7 @@
   <div class="section-head"><div><div class="eyebrow">WHOLESALE ORDER</div><h2 id="dialogTitle">Create order</h2></div><button id="closeDialog" class="x" type="button">✕</button></div>
   <form id="orderForm" class="stack">
     <input id="editingId" type="hidden">
+    <button id="openCustomer" type="button" class="hidden" aria-hidden="true" tabindex="-1"></button>
     <div class="grid">
       <label>Customer<select id="customer" required></select></label>
       <label>Priority<select id="priority"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
