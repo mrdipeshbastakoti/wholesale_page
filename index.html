@@ -7,9 +7,9 @@
   <meta name="description" content="Wildcat Brewing wholesale order management dashboard" />
   <title>Wildcat Wholesale</title>
   <link rel="icon" href="./assets/images/wildcat-logo.png" type="image/png" />
-  <link rel="stylesheet" href="./assets/css/style.css?v=4" />
+  <link rel="stylesheet" href="./assets/css/style.css?v=5" />
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="./assets/js/app.js?v=4"></script>
+  <script defer src="./assets/js/app.js?v=5"></script>
 </head>
 <body>
 <div id="toast" class="toast hidden"></div>
@@ -41,6 +41,7 @@
     <nav id="mainNav" class="main-nav">
       <button class="nav-btn active" data-page="overview">Overview</button>
       <button class="nav-btn" data-page="orders">Orders</button>
+      <button class="nav-btn" data-page="delivered">Delivered</button>
       <button class="nav-btn" data-page="sales">Sales</button>
       <button class="nav-btn" data-page="beers">Beers</button>
       <button class="nav-btn" data-page="customers">Customers</button>
@@ -69,17 +70,30 @@
 
       <section id="page-orders" class="app-page">
         <section class="hero">
-          <div><div class="eyebrow">WORKFLOW</div><h1>Orders</h1><p class="sub">Create, prioritize, prepare, deliver and search wholesale orders.</p></div>
+          <div><div class="eyebrow">WORKFLOW</div><h1>Active orders</h1><p class="sub">Only orders still being prepared or delivered appear here.</p></div>
           <button class="btn primary js-new-order">＋ New order</button>
         </section>
         <section class="card compact-card">
           <div class="toolbar">
             <input id="orderSearch" class="search" type="search" placeholder="Search customer, beer or order number…" />
             <div id="chips" class="chips">
-              <button class="chip on" data-filter="all">All</button><button class="chip" data-filter="urgent">Urgent</button><button class="chip" data-filter="not_started">Not started</button><button class="chip" data-filter="preparing">Preparing</button><button class="chip" data-filter="ready">Ready</button><button class="chip" data-filter="out_for_delivery">Delivery</button><button class="chip" data-filter="on_hold">On hold</button><button class="chip" data-filter="delivered">Delivered</button>
+              <button class="chip on" data-filter="all">All</button><button class="chip" data-filter="urgent">Urgent</button><button class="chip" data-filter="not_started">Not started</button><button class="chip" data-filter="preparing">Preparing</button><button class="chip" data-filter="ready">Ready</button><button class="chip" data-filter="out_for_delivery">Delivery</button><button class="chip" data-filter="on_hold">On hold</button>
             </div>
           </div>
           <div id="orders" class="orders"></div>
+        </section>
+      </section>
+
+      <section id="page-delivered" class="app-page">
+        <section class="hero">
+          <div><div class="eyebrow">HISTORY</div><h1>Delivered orders</h1><p class="sub">Completed orders stay here separately so the active list stays clean.</p></div>
+        </section>
+        <section class="card compact-card">
+          <div class="toolbar">
+            <input id="deliveredSearch" class="search" type="search" placeholder="Search delivered customer, beer or order number…" />
+            <div id="deliveredCount" class="muted"></div>
+          </div>
+          <div id="deliveredOrders" class="orders"></div>
         </section>
       </section>
 
