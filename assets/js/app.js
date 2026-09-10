@@ -10,6 +10,7 @@ let orders = [];
 let prepRows = [];
 let activeFilter = 'all';
 let orderSearch = '';
+let deliveredSearch = '';
 let customerSearch = '';
 let salesPeriod = 'all';
 let realtimeSetup = false;
@@ -37,6 +38,13 @@ function priorityClass(p) { return p === 'urgent' ? 'urgent' : p === 'high' ? 'h
 function statusTagClass(s) { return s === 'ready' ? 'ready' : s === 'out_for_delivery' ? 'delivery' : s === 'on_hold' ? 'hold' : ''; }
 function orderDate(o) { return o.delivered_at || o.delivery_date || o.order_date || o.created_at; }
 function todayISO() { return new Date().toISOString().slice(0,10); }
+function matchesOrderSearch(o, q) {
+  if (!q) return true;
+  const s = q.toLowerCase();
+  return (o.customers?.name || '').toLowerCase().includes(s)
+    || (o.order_items || []).some(i => (i.beers?.name || '').toLowerCase().includes(s))
+    || String(o.order_number || '').includes(s);
+}
 
 function switchPage(page) {
   document.querySelectorAll('.app-page').forEach(s => s.classList.toggle('active', s.id === `page-${page}`));
@@ -97,6 +105,7 @@ async function loadAll() {
 function renderAll() {
   renderOverview();
   renderOrders();
+  renderDelivered();
   renderSales();
   renderBeers();
   renderCustomers();
@@ -115,21 +124,29 @@ function renderOverview() {
   $('prep').innerHTML = rows.length ? `<table><thead><tr><th>Beer</th><th>Boxes</th><th>Cans</th><th>Kegs</th></tr></thead><tbody>${rows.map(r => `<tr><td><b>${esc(r.beer_name)}</b></td><td>${compactNumber(r.boxes_to_prepare)}</td><td>${compactNumber(r.cans_to_prepare)}</td><td>${compactNumber(r.kegs_to_prepare)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">Nothing waiting to be prepared 🎉</div>';
 
   const priority = active.slice(0,5);
-  $('priorityOrders').innerHTML = priority.length ? priority.map(renderOrderCard).join('') : '<div class="empty">No active orders.</div>';
+  $('priorityOrders').innerHTML = priority.length ? priority.map(o => renderOrderCard(o,'active')).join('') : '<div class="empty">No active orders.</div>';
   bindOrderButtons($('priorityOrders'));
 }
 
 function renderOrders() {
-  let list = orders.filter(o => activeFilter === 'all' || (activeFilter === 'urgent' ? o.priority === 'urgent' : o.status === activeFilter));
-  if (orderSearch) {
-    const q = orderSearch.toLowerCase();
-    list = list.filter(o => (o.customers?.name || '').toLowerCase().includes(q) || (o.order_items || []).some(i => (i.beers?.name || '').toLowerCase().includes(q)) || String(o.order_number || '').includes(q));
+  let list = orders.filter(o => !['delivered','cancelled'].includes(o.status));
+  if (activeFilter !== 'all') {
+    list = list.filter(o => activeFilter === 'urgent' ? o.priority === 'urgent' : o.status === activeFilter);
   }
-  $('orders').innerHTML = list.length ? list.map(renderOrderCard).join('') : '<div class="empty">No matching orders.</div>';
+  list = list.filter(o => matchesOrderSearch(o, orderSearch));
+  $('orders').innerHTML = list.length ? list.map(o => renderOrderCard(o,'active')).join('') : '<div class="empty">No matching active orders.</div>';
   bindOrderButtons($('orders'));
 }
 
-function renderOrderCard(order) {
+function renderDelivered() {
+  let list = orders.filter(o => o.status === 'delivered').filter(o => matchesOrderSearch(o, deliveredSearch));
+  list = [...list].sort((a,b) => new Date(orderDate(b)) - new Date(orderDate(a)));
+  $('deliveredCount').textContent = `${list.length} delivered order${list.length === 1 ? '' : 's'}`;
+  $('deliveredOrders').innerHTML = list.length ? list.map(o => renderOrderCard(o,'delivered')).join('') : '<div class="empty">No delivered orders yet.</div>';
+  bindOrderButtons($('deliveredOrders'));
+}
+
+function renderOrderCard(order, mode='active') {
   const items = (order.order_items || []).map(item => {
     if (item.package_type === 'can') {
       const perBox = item.cans_per_box || 12;
@@ -139,13 +156,21 @@ function renderOrderCard(order) {
     return `${esc(item.beers?.name || 'Beer')} — ${item.quantity} × ${item.keg_size_l || 20}L keg${item.quantity > 1 ? 's' : ''}`;
   }).join('<br>');
 
+  const workflow = mode === 'delivered'
+    ? `<div class="flow"><button type="button" data-action="status" data-status="not_started">Move back to active</button></div>`
+    : `<div class="flow">${flowStates.map(s => `<button type="button" data-action="status" data-status="${s}" class="${order.status === s ? 'on' : ''}">${labels[s]}</button>`).join('')}<button type="button" data-action="hold" class="${order.status === 'on_hold' ? 'on' : ''}">On hold</button></div>`;
+
+  const actions = mode === 'delivered'
+    ? `<div class="actions"><button type="button" class="btn secondary" data-action="edit">Edit</button></div>`
+    : `<div class="actions"><button type="button" class="btn secondary" data-action="edit">Edit</button><button type="button" class="btn danger" data-action="delete">Delete</button></div>`;
+
   return `<article class="order" data-id="${order.id}">
     <div class="order-top"><div><div class="name">${esc(order.customers?.name || 'Customer')}</div><div class="muted">#${order.order_number || ''}${order.delivery_date ? ' · ' + order.delivery_date : ''}</div></div><div class="tags"><span class="tag ${priorityClass(order.priority)}">${esc((order.priority || 'normal').toUpperCase())}</span><span class="tag ${statusTagClass(order.status)}">${esc(labels[order.status] || order.status)}</span></div></div>
     <div class="items">${items || '<span class="muted">No beer items</span>'}</div>
-    <div class="meta">${order.delivery_method ? `<span>Delivery: ${esc(order.delivery_method)}</span>` : ''}</div>
+    <div class="meta">${order.delivery_method ? `<span>Delivery: ${esc(order.delivery_method)}</span>` : ''}${order.status === 'delivered' && order.delivered_at ? `<span>Delivered: ${String(order.delivered_at).slice(0,10)}</span>` : ''}</div>
     ${order.notes ? `<div class="muted" style="margin-top:8px">${esc(order.notes)}</div>` : ''}
-    <div class="flow">${flowStates.map(s => `<button type="button" data-action="status" data-status="${s}" class="${order.status === s ? 'on' : ''}">${labels[s]}</button>`).join('')}<button type="button" data-action="hold" class="${order.status === 'on_hold' ? 'on' : ''}">On hold</button></div>
-    <div class="actions"><button type="button" class="btn secondary" data-action="edit">Edit</button><button type="button" class="btn danger" data-action="delete">Delete</button></div>
+    ${workflow}
+    ${actions}
   </article>`;
 }
 
@@ -160,13 +185,29 @@ function bindOrderButtons(root) {
 }
 
 async function updateOrderStatus(id,status) {
+  const order = orders.find(o => o.id === id);
+  if (!order) return;
+  const customer = order.customers?.name || 'this customer';
+
+  if (status === 'delivered' && order.status !== 'delivered') {
+    const ok = confirm(`Are you sure order #${order.order_number || ''} for ${customer} has been delivered?\n\nIt will be moved out of Active Orders and saved under Delivered.`);
+    if (!ok) return;
+  }
+  if (order.status === 'delivered' && status !== 'delivered') {
+    const ok = confirm(`Are you sure you want to move order #${order.order_number || ''} back to Active Orders?`);
+    if (!ok) return;
+  }
+
   const {error} = await supa.from('orders').update({status}).eq('id',id);
   if (error) return toast(error.message);
-  toast('Status updated');
+  toast(status === 'delivered' ? 'Order moved to Delivered' : order.status === 'delivered' ? 'Order moved back to Active' : 'Status updated');
   await loadAll();
 }
+
 async function deleteOrder(id) {
-  if (!confirm('Remove this order? It will stay in the database as cancelled.')) return;
+  const order = orders.find(o => o.id === id);
+  const customer = order?.customers?.name || 'this customer';
+  if (!confirm(`Are you sure you want to remove order #${order?.order_number || ''} for ${customer}?\n\nIt will be kept in the database as cancelled.`)) return;
   const {error} = await supa.from('orders').update({status:'cancelled'}).eq('id',id);
   if (error) return toast(error.message);
   toast('Order removed');
@@ -425,6 +466,15 @@ $('orderForm').addEventListener('submit', async e => {
     status:$('orderStatus').value
   };
 
+  const existing = editingId ? orders.find(o => o.id === editingId) : null;
+  if (payload.status === 'delivered' && existing?.status !== 'delivered') {
+    const customer = customers.find(c => c.id === customerId)?.name || 'this customer';
+    if (!confirm(`Are you sure this order for ${customer} is already delivered?\n\nIt will be saved under Delivered Orders.`)) return;
+  }
+  if (existing?.status === 'delivered' && payload.status !== 'delivered') {
+    if (!confirm('Are you sure you want to move this delivered order back to Active Orders?')) return;
+  }
+
   if (editingId) {
     const {error}=await supa.from('orders').update(payload).eq('id',editingId);
     if (error) return toast(error.message);
@@ -441,7 +491,7 @@ $('orderForm').addEventListener('submit', async e => {
       await supa.from('orders').delete().eq('id',data.id);
       return toast(ins.error.message);
     }
-    toast('Order created');
+    toast(payload.status === 'delivered' ? 'Order saved under Delivered' : 'Order created');
   }
   $('orderDialog').close();
   await loadAll();
@@ -529,7 +579,7 @@ $('beerForm').addEventListener('submit', async e => {
 
 async function setBeerActive(id,active) {
   const b=allBeers.find(x => x.id === id);
-  if (!active && !confirm(`Delete ${b?.name || 'this beer'} from the active list? Old orders will still keep their history.`)) return;
+  if (!active && !confirm(`Are you sure you want to delete ${b?.name || 'this beer'} from the active list?\n\nOld orders will still keep their history.`)) return;
   const {error}=await supa.from('beers').update({active}).eq('id',id);
   if (error) return toast(error.message);
   toast(active ? 'Beer restored' : 'Beer removed');
@@ -538,6 +588,7 @@ async function setBeerActive(id,active) {
 
 $('showArchivedBeers').onchange=renderBeers;
 $('orderSearch').oninput=e => { orderSearch=e.target.value.trim(); renderOrders(); };
+$('deliveredSearch').oninput=e => { deliveredSearch=e.target.value.trim(); renderDelivered(); };
 $('customerSearch').oninput=e => { customerSearch=e.target.value.trim(); renderCustomers(); };
 $('salesPeriod').onchange=e => { salesPeriod=e.target.value; renderSales(); };
 document.querySelectorAll('#chips .chip').forEach(btn => btn.onclick=() => {
