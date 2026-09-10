@@ -1,6 +1,7 @@
 (function(){
   const NEW_CUSTOMER_VALUE = '__new_customer__';
   let pendingCustomerName = '';
+  let returnToOrder = false;
   let applying = false;
 
   function ensureNewCustomerOption(){
@@ -12,10 +13,18 @@
     const option = document.createElement('option');
     option.value = NEW_CUSTOMER_VALUE;
     option.textContent = '＋ Add new customer';
-
     if (select.options.length > 0) select.insertBefore(option, select.options[1] || null);
     else select.appendChild(option);
     applying = false;
+  }
+
+  function reopenOrder(){
+    if (!returnToOrder) return;
+    const orderDialog = document.getElementById('orderDialog');
+    if (orderDialog && !orderDialog.open) {
+      try { orderDialog.showModal(); } catch (_) {}
+    }
+    returnToOrder = false;
   }
 
   function selectNewlyAddedCustomer(){
@@ -27,6 +36,7 @@
     if (target) {
       select.value = target.value;
       pendingCustomerName = '';
+      setTimeout(reopenOrder, 50);
     }
   }
 
@@ -34,6 +44,8 @@
     const select = document.getElementById('customer');
     const customerForm = document.getElementById('customerForm');
     const customerName = document.getElementById('customerName');
+    const customerDialog = document.getElementById('customerDialog');
+    const orderDialog = document.getElementById('orderDialog');
     const separateButton = document.getElementById('openCustomer');
 
     if (separateButton) separateButton.style.display = 'none';
@@ -44,12 +56,19 @@
     select.addEventListener('change', () => {
       if (select.value !== NEW_CUSTOMER_VALUE) return;
       select.value = '';
-      if (typeof window.openCustomerDialog === 'function') {
-        window.openCustomerDialog();
-      } else {
-        const dialog = document.getElementById('customerDialog');
-        if (dialog && !dialog.open) dialog.showModal();
+
+      if (orderDialog?.open) {
+        orderDialog.close();
+        returnToOrder = true;
       }
+
+      setTimeout(() => {
+        if (typeof window.openCustomerDialog === 'function') {
+          window.openCustomerDialog();
+        } else if (customerDialog && !customerDialog.open) {
+          customerDialog.showModal();
+        }
+      }, 50);
     });
 
     new MutationObserver(() => {
@@ -60,11 +79,11 @@
     if (customerForm) {
       customerForm.addEventListener('submit', () => {
         pendingCustomerName = (customerName?.value || '').trim();
-        setTimeout(() => {
-          ensureNewCustomerOption();
-          selectNewlyAddedCustomer();
-        }, 700);
       });
     }
+
+    customerDialog?.addEventListener('close', () => {
+      if (returnToOrder && !pendingCustomerName) setTimeout(reopenOrder, 50);
+    });
   });
 })();
