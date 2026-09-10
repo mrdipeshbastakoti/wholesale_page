@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./assets/css/light.css?v=1" />
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./assets/js/app.js?v=5"></script>
+  <script defer src="./assets/js/customer-select.js?v=1"></script>
   <style>
     .flow button[data-status="delivered"]{display:none}
     .quick-delivered{
@@ -23,17 +24,8 @@
       box-shadow:0 8px 18px rgba(37,122,67,.22)
     }
     .quick-delivered:hover{background:#2d8c50}
-    .customer-picker{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:8px;
-      align-items:end;
-    }
-    .customer-picker .btn{white-space:nowrap}
     @media(max-width:760px){
       .quick-delivered{width:100%;flex-basis:100%;padding:13px 14px;font-size:14px}
-      .customer-picker{grid-template-columns:1fr}
-      .customer-picker .btn{width:100%}
     }
   </style>
 </head>
@@ -160,10 +152,7 @@
   <form id="orderForm" class="stack">
     <input id="editingId" type="hidden">
     <div class="grid">
-      <div class="customer-picker">
-        <label>Customer<select id="customer" required></select></label>
-        <button id="openCustomer" type="button" class="btn primary">＋ New customer</button>
-      </div>
+      <label>Customer<select id="customer" required></select></label>
       <label>Priority<select id="priority"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
       <label>Delivery date<input id="deliveryDate" type="date"></label>
       <label>Delivery method<input id="deliveryMethod" placeholder="Drive / courier / pickup"></label>
