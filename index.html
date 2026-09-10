@@ -23,8 +23,17 @@
       box-shadow:0 8px 18px rgba(37,122,67,.22)
     }
     .quick-delivered:hover{background:#2d8c50}
+    .customer-picker{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:8px;
+      align-items:end;
+    }
+    .customer-picker .btn{white-space:nowrap}
     @media(max-width:760px){
       .quick-delivered{width:100%;flex-basis:100%;padding:13px 14px;font-size:14px}
+      .customer-picker{grid-template-columns:1fr}
+      .customer-picker .btn{width:100%}
     }
   </style>
 </head>
@@ -151,13 +160,16 @@
   <form id="orderForm" class="stack">
     <input id="editingId" type="hidden">
     <div class="grid">
-      <label>Customer<select id="customer" required></select></label>
+      <div class="customer-picker">
+        <label>Customer<select id="customer" required></select></label>
+        <button id="openCustomer" type="button" class="btn primary">＋ New customer</button>
+      </div>
       <label>Priority<select id="priority"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
       <label>Delivery date<input id="deliveryDate" type="date"></label>
       <label>Delivery method<input id="deliveryMethod" placeholder="Drive / courier / pickup"></label>
       <label>Status<select id="orderStatus"><option value="not_started">Not started</option><option value="preparing">Preparing</option><option value="ready">Ready</option><option value="out_for_delivery">Out for delivery</option><option value="on_hold">On hold</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select></label>
     </div>
-    <div class="section-head"><b>Beer items</b><div class="button-row"><button id="openCustomer" type="button" class="btn secondary">＋ Add customer</button><button id="addBeerFromOrder" type="button" class="btn secondary">＋ Add beer</button><button id="addItem" type="button" class="btn secondary">＋ Add item</button></div></div>
+    <div class="section-head"><b>Beer items</b><div class="button-row"><button id="addBeerFromOrder" type="button" class="btn secondary">＋ Add beer</button><button id="addItem" type="button" class="btn secondary">＋ Add item</button></div></div>
     <div id="itemRows"></div>
     <label>Notes<textarea id="notes" rows="3" placeholder="Packing or delivery notes"></textarea></label>
     <button class="btn primary" type="submit">Save order</button>
