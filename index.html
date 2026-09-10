@@ -7,9 +7,9 @@
   <meta name="description" content="Wildcat Brewing wholesale order management dashboard" />
   <title>Wildcat Wholesale</title>
   <link rel="icon" href="./assets/images/wildcat-logo.png" type="image/png" />
-  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/style.css?v=4" />
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="./assets/js/app.js"></script>
+  <script defer src="./assets/js/app.js?v=4"></script>
 </head>
 <body>
 <div id="toast" class="toast hidden"></div>
@@ -19,7 +19,7 @@
     <div class="auth-logo-wrap"><img class="auth-logo" src="./assets/images/wildcat-logo.png" alt="Wildcat Beer Co. logo" /></div>
     <div class="eyebrow centered">WILDCAT BREWING</div>
     <h1>Wholesale Manager</h1>
-    <p class="muted centered">Orders, beer, sales, customers, cans, kegs and delivery — all in one place.</p>
+    <p class="muted centered">Orders, beer, customers, cans, kegs and delivery — all in one place.</p>
     <form id="loginForm" class="stack">
       <label>Email<input id="email" type="email" autocomplete="email" required></label>
       <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
@@ -74,7 +74,7 @@
         </section>
         <section class="card compact-card">
           <div class="toolbar">
-            <input id="orderSearch" class="search" type="search" placeholder="Search customer or beer…" />
+            <input id="orderSearch" class="search" type="search" placeholder="Search customer, beer or order number…" />
             <div id="chips" class="chips">
               <button class="chip on" data-filter="all">All</button><button class="chip" data-filter="urgent">Urgent</button><button class="chip" data-filter="not_started">Not started</button><button class="chip" data-filter="preparing">Preparing</button><button class="chip" data-filter="ready">Ready</button><button class="chip" data-filter="out_for_delivery">Delivery</button><button class="chip" data-filter="on_hold">On hold</button><button class="chip" data-filter="delivered">Delivered</button>
             </div>
@@ -85,28 +85,28 @@
 
       <section id="page-sales" class="app-page">
         <section class="hero">
-          <div><div class="eyebrow">ANALYTICS</div><h1>Sales overview</h1><p class="sub">See how much beer Wildcat has sold through completed wholesale orders.</p></div>
+          <div><div class="eyebrow">ANALYTICS</div><h1>Sales overview</h1><p class="sub">See how much beer Wildcat has sold through delivered wholesale orders.</p></div>
           <select id="salesPeriod" class="period-select"><option value="all">All time</option><option value="month">This month</option><option value="30">Last 30 days</option><option value="year">This year</option></select>
         </section>
         <section id="salesMetrics" class="metrics sales-metrics"></section>
         <section class="grid-two">
-          <div class="card"><div class="eyebrow">BY BEER</div><h2>Beer sales</h2><div id="salesByBeer"></div></div>
-          <div class="card"><div class="eyebrow">BY CUSTOMER</div><h2>Top customers</h2><div id="salesByCustomer"></div></div>
+          <div class="card"><div class="eyebrow">BY BEER</div><h2>Beer sold</h2><div id="salesByBeer"></div></div>
+          <div class="card"><div class="eyebrow">BY CUSTOMER</div><h2>Customer volume</h2><div id="salesByCustomer"></div></div>
         </section>
-        <section class="card"><div class="section-head"><div><div class="eyebrow">HISTORY</div><h2>Recent delivered orders</h2></div><button id="exportSales" class="btn secondary">Export CSV</button></div><div id="salesHistory"></div><p class="hint">Revenue is calculated only for order items where a unit price was entered.</p></section>
+        <section class="card"><div class="section-head"><div><div class="eyebrow">HISTORY</div><h2>Recent delivered orders</h2></div><button id="exportSales" class="btn secondary">Export CSV</button></div><div id="salesHistory"></div></section>
       </section>
 
       <section id="page-beers" class="app-page">
         <section class="hero">
-          <div><div class="eyebrow">CATALOG</div><h1>Beer management</h1><p class="sub">Add new beers, edit defaults, archive old beers and restore them later.</p></div>
+          <div><div class="eyebrow">CATALOG</div><h1>Beer management</h1><p class="sub">Add beers, edit packaging defaults, remove old beers and restore them later.</p></div>
           <button id="newBeer" class="btn primary">＋ Add beer</button>
         </section>
-        <section class="card"><div class="section-head"><h2>Beer list</h2><label class="inline-check"><input id="showArchivedBeers" type="checkbox"> Show archived</label></div><div id="beerList" class="management-list"></div></section>
+        <section class="card"><div class="section-head"><h2>Beer list</h2><label class="inline-check"><input id="showArchivedBeers" type="checkbox"> Show removed beers</label></div><div id="beerList" class="management-list"></div></section>
       </section>
 
       <section id="page-customers" class="app-page">
         <section class="hero">
-          <div><div class="eyebrow">ACCOUNTS</div><h1>Customers</h1><p class="sub">Wholesale accounts with order counts and lifetime sales.</p></div>
+          <div><div class="eyebrow">ACCOUNTS</div><h1>Customers</h1><p class="sub">Wholesale accounts with order counts and delivered beer volume.</p></div>
           <button id="newCustomer" class="btn primary">＋ Add customer</button>
         </section>
         <section class="card"><div class="toolbar"><input id="customerSearch" class="search" type="search" placeholder="Search customers…" /></div><div id="customerList" class="management-list"></div></section>
@@ -123,12 +123,10 @@
       <label>Customer<select id="customer" required></select></label>
       <label>Priority<select id="priority"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
       <label>Delivery date<input id="deliveryDate" type="date"></label>
-      <label>Payment<select id="payment"><option value="pending">Pending</option><option value="partial">Partial</option><option value="paid">Paid</option><option value="not_required">Not required</option></select></label>
       <label>Delivery method<input id="deliveryMethod" placeholder="Drive / courier / pickup"></label>
-      <label>Assigned to<input id="assignedTo" placeholder="Staff name"></label>
       <label>Status<select id="orderStatus"><option value="not_started">Not started</option><option value="preparing">Preparing</option><option value="ready">Ready</option><option value="out_for_delivery">Out for delivery</option><option value="on_hold">On hold</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select></label>
     </div>
-    <div class="section-head"><b>Beer items</b><div class="button-row"><button id="openCustomer" type="button" class="btn secondary">＋ Add customer</button><button id="addItem" type="button" class="btn secondary">＋ Add item</button></div></div>
+    <div class="section-head"><b>Beer items</b><div class="button-row"><button id="openCustomer" type="button" class="btn secondary">＋ Add customer</button><button id="addBeerFromOrder" type="button" class="btn secondary">＋ Add beer</button><button id="addItem" type="button" class="btn secondary">＋ Add item</button></div></div>
     <div id="itemRows"></div>
     <label>Notes<textarea id="notes" rows="3" placeholder="Packing or delivery notes"></textarea></label>
     <button class="btn primary" type="submit">Save order</button>
@@ -149,7 +147,7 @@
     <input id="editingBeerId" type="hidden">
     <label>Beer name<input id="beerName" required placeholder="e.g. Ghost Note"></label>
     <div class="grid"><label>Default can size (ml)<input id="beerCanSize" type="number" min="1" value="500"></label><label>Default cans per box<input id="beerBoxSize" type="number" min="1" value="12"></label></div>
-    <label>Notes<textarea id="beerNotes" rows="3" placeholder="Style, packaging notes, etc."></textarea></label>
+    <label>Notes<textarea id="beerNotes" rows="3" placeholder="Style or packaging notes"></textarea></label>
     <button class="btn primary" type="submit">Save beer</button>
   </form>
 </dialog>
