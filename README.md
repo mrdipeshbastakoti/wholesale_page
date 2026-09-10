@@ -2,46 +2,31 @@
 
 Internal wholesale order management system for Wildcat Brewing.
 
-## Live site
+## Current features
 
-GitHub Pages serves the app from the `main` branch and repository root.
-
-## Project structure
-
-```text
-wholesale_page/
-├─ index.html
-├─ assets/
-│  ├─ css/
-│  │  └─ style.css
-│  ├─ js/
-│  │  └─ app.js
-│  └─ images/
-│     └─ wildcat-logo.png
-├─ README.md
-└─ .nojekyll
-```
-
-## Features
-
-- Dynamic wholesale orders
-- Boxes/cans and kegs
-- Preparation totals by beer
+- Dynamic wholesale order dashboard
+- Can / box and keg orders
+- Multiple beers in one customer order
 - Priority: Low, Normal, High, Urgent
 - Workflow: Not Started → Preparing → Ready → Out for Delivery → Delivered
-- On-hold orders
-- Customer management
-- Delivery date and method
-- Payment status
-- Edit and remove orders
+- On-hold and cancelled order handling
+- Automatic beer-to-prepare totals
+- Add, edit, archive and restore beers
+- Add and edit wholesale customers
+- Unit price per box / keg and automatic order totals
+- Sales dashboard: all-time, this month, last 30 days and this year
+- Total boxes, cans, kegs, liters, delivered orders and recorded revenue
+- Sales by beer and by customer
+- Delivered order history
+- CSV sales export
+- Search orders and customers
 - Mobile-friendly layout
-- Realtime Supabase updates
-- Staff-only authentication
-
-## Backend
-
-Supabase stores customers, beers, orders, order items, status history and staff access. The frontend uses only the Supabase publishable key; business data remains protected by Row Level Security and the staff allowlist.
+- Supabase authentication, Row Level Security and realtime updates
 
 ## Hosting
 
-The frontend is static and can run for free on GitHub Pages. The database and authentication stay in the separate `wildcat-ops` Supabase project.
+GitHub Pages from the `main` branch, root folder.
+
+## Security
+
+The frontend contains only the Supabase publishable browser key. Wholesale business data is protected by Supabase Row Level Security and the Wildcat staff allowlist.
