@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Wildcat Admin</title>
+  <link rel="icon" href="../assets/images/wildcat-logo.png" type="image/png" />
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#151b17;background:#f6f7f4}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#fff 0%,#f6f7f4 100%);display:grid;place-items:center;padding:24px}
+    .panel{width:min(100%,520px);background:#fff;border:1px solid #dde2d9;border-radius:28px;padding:30px;box-shadow:0 20px 60px rgba(20,30,20,.08)}
+    .logo{width:112px;height:112px;display:block;margin:0 auto 18px;border-radius:24px;object-fit:cover}
+    .eyebrow{text-align:center;letter-spacing:.18em;font-size:12px;font-weight:900;color:#b77800;margin-bottom:8px}
+    h1{text-align:center;margin:0 0 8px;font-size:32px;line-height:1.1}
+    .sub{text-align:center;color:#737d73;line-height:1.5;margin:0 0 28px}
+    .hidden{display:none!important}
+    form{display:grid;gap:16px}
+    label{display:grid;gap:7px;font-weight:700;font-size:14px}
+    input{width:100%;padding:15px 16px;border:1px solid #cfd6cc;border-radius:14px;font:inherit;font-size:16px;background:#fff;outline:none}
+    input:focus{border-color:#d99b15;box-shadow:0 0 0 3px rgba(217,155,21,.14)}
+    button,.btn{border:0;border-radius:14px;padding:15px 18px;font:inherit;font-weight:850;cursor:pointer;text-decoration:none;text-align:center}
+    .primary{background:#efad22;color:#171a15}
+    .secondary{background:#f0f2ed;color:#283028}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .message{min-height:20px;font-size:14px;color:#687268;text-align:center}
+    .error{color:#a12626}
+    .success{color:#257a43}
+    .lock{text-align:center;padding:8px 0 2px}
+    .lock-icon{font-size:36px;margin-bottom:8px}
+    .small{font-size:13px;color:#7b847b;text-align:center;line-height:1.5}
+    @media(max-width:560px){body{padding:14px}.panel{padding:24px 20px;border-radius:24px}.logo{width:96px;height:96px}h1{font-size:28px}.actions{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <img class="logo" src="../assets/images/wildcat-logo.png" alt="Wildcat Beer Co. logo" />
+    <div class="eyebrow">WILDCAT BREWING</div>
+    <h1>Admin</h1>
+    <p class="sub">Private staff account settings.</p>
+
+    <section id="loading" class="lock">
+      <div class="lock-icon">🔐</div>
+      <p>Checking admin access…</p>
+    </section>
+
+    <section id="locked" class="hidden lock">
+      <div class="lock-icon">🔒</div>
+      <h2>Admin access required</h2>
+      <p class="small">Sign in to the Wholesale Manager first, then return to this admin address.</p>
+      <div class="actions"><a class="btn primary" href="../">Go to sign in</a></div>
+    </section>
+
+    <section id="denied" class="hidden lock">
+      <div class="lock-icon">⛔</div>
+      <h2>Access denied</h2>
+      <p class="small">This signed-in account is not an approved Wildcat staff account.</p>
+      <div class="actions"><button id="deniedSignOut" class="secondary" type="button">Sign out</button><a class="btn primary" href="../">Back</a></div>
+    </section>
+
+    <section id="settings" class="hidden">
+      <form id="passwordForm">
+        <label>New password
+          <input id="password" type="password" autocomplete="new-password" minlength="8" required />
+        </label>
+        <label>Confirm new password
+          <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required />
+        </label>
+        <div id="message" class="message"></div>
+        <button id="save" class="primary" type="submit">Change password</button>
+      </form>
+      <div class="actions"><a class="btn secondary" href="../">Back to manager</a><button id="signOut" class="secondary" type="button">Sign out</button></div>
+      <p class="small">For security, this page is not linked from the main dashboard and is blocked from search indexing.</p>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://gqbyigliedexvjyxshkb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_KWzE2eqCE4FY-15N6E1k6g_ITE7zqHI';
+    let client;
+
+    const show = id => {
+      ['loading','locked','denied','settings'].forEach(x => document.getElementById(x).classList.toggle('hidden', x !== id));
+    };
+
+    async function authorize(session){
+      if (!session?.user?.email) return show('locked');
+      const {data,error} = await client.from('staff_allowlist').select('email,active').ilike('email',session.user.email).maybeSingle();
+      if (error || !data || !data.active) return show('denied');
+      show('settings');
+    }
+
+    window.addEventListener('load', async () => {
+      client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const {data:{session}} = await client.auth.getSession();
+      await authorize(session);
+
+      client.auth.onAuthStateChange(async (event,session) => {
+        if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') await authorize(session);
+        if (event === 'SIGNED_OUT') show('locked');
+      });
+
+      document.getElementById('passwordForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        const message = document.getElementById('message');
+        const save = document.getElementById('save');
+        message.className = 'message';
+
+        if (password.length < 8){ message.textContent='Use at least 8 characters.'; message.classList.add('error'); return; }
+        if (password !== confirm){ message.textContent='The passwords do not match.'; message.classList.add('error'); return; }
+
+        save.disabled = true;
+        save.textContent = 'Changing…';
+        const {error} = await client.auth.updateUser({password});
+        if (error){
+          message.textContent = error.message;
+          message.classList.add('error');
+          save.disabled = false;
+          save.textContent = 'Change password';
+          return;
+        }
+
+        message.textContent = 'Password changed. Signing you out…';
+        message.classList.add('success');
+        await client.auth.signOut();
+        setTimeout(() => location.replace('../'), 900);
+      });
+
+      const signOut = async () => { await client.auth.signOut(); location.replace('../'); };
+      document.getElementById('signOut').addEventListener('click',signOut);
+      document.getElementById('deniedSignOut').addEventListener('click',signOut);
+    });
+  </script>
+</body>
+</html>
