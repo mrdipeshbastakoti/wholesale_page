@@ -24,6 +24,8 @@
       box-shadow:0 8px 18px rgba(37,122,67,.22)
     }
     .quick-delivered:hover{background:#2d8c50}
+    #salesHistory th:nth-child(2),
+    #salesHistory td:nth-child(2){display:none}
     @media(max-width:760px){
       .quick-delivered{width:100%;flex-basis:100%;padding:13px 14px;font-size:14px}
     }
@@ -93,7 +95,7 @@
         </section>
         <section class="card compact-card">
           <div class="toolbar">
-            <input id="orderSearch" class="search" type="search" placeholder="Search customer, beer or order number…" />
+            <input id="orderSearch" class="search" type="search" placeholder="Search customer or beer…" />
             <div id="chips" class="chips">
               <button class="chip on" data-filter="all">All</button><button class="chip" data-filter="urgent">Urgent</button><button class="chip" data-filter="not_started">Not started</button><button class="chip" data-filter="preparing">Preparing</button><button class="chip" data-filter="ready">Ready</button><button class="chip" data-filter="out_for_delivery">Delivery</button><button class="chip" data-filter="on_hold">On hold</button>
             </div>
@@ -108,7 +110,7 @@
         </section>
         <section class="card compact-card">
           <div class="toolbar">
-            <input id="deliveredSearch" class="search" type="search" placeholder="Search delivered customer, beer or order number…" />
+            <input id="deliveredSearch" class="search" type="search" placeholder="Search delivered customer or beer…" />
             <div id="deliveredCount" class="muted"></div>
           </div>
           <div id="deliveredOrders" class="orders"></div>
@@ -212,6 +214,30 @@
       if (!target) return;
       new MutationObserver(() => addQuickDeliveredButtons(target)).observe(target,{childList:true,subtree:true});
     });
+  });
+})();
+
+(function(){
+  function removeVisibleOrderNumbers(root=document){
+    root.querySelectorAll('.order .order-top > div:first-child > .muted').forEach(el => {
+      const cleaned = el.textContent.replace(/^#\d+\s*(?:·\s*)?/, '');
+      if (cleaned !== el.textContent) el.textContent = cleaned;
+      el.style.display = cleaned.trim() ? '' : 'none';
+    });
+  }
+
+  const originalConfirm = window.confirm.bind(window);
+  window.confirm = function(message){
+    const cleaned = String(message)
+      .replace(/order #\d+\s+for\s+/gi, 'order for ')
+      .replace(/order #\d+\s+/gi, 'this order ');
+    return originalConfirm(cleaned);
+  };
+
+  window.addEventListener('load', () => {
+    removeVisibleOrderNumbers();
+    const target = document.getElementById('app');
+    if (target) new MutationObserver(() => removeVisibleOrderNumbers(target)).observe(target,{childList:true,subtree:true});
   });
 })();
 </script>
