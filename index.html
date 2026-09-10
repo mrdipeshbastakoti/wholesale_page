@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#11110f" />
+  <title>Wildcat Wholesale</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#10110f;--panel:#191b18;--panel2:#22241f;--line:#31342d;--text:#f5f3ea;--muted:#a6aa9d;--amber:#e7b24b;--red:#f17f6e;--green:#81c995;--blue:#84b7e8;--shadow:0 18px 40px #0004}
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#12130f,#0d0e0c);color:var(--text);font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+    button,input,select,textarea{font:inherit} button{cursor:pointer}.hidden{display:none!important}
+    .top{position:sticky;top:0;z-index:10;background:#10110fe8;backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:13px 16px;display:flex;justify-content:space-between;align-items:center}
+    .brand{display:flex;gap:10px;align-items:center}.logo{width:42px;height:42px;border-radius:13px;background:var(--amber);color:#14130f;display:grid;place-items:center;font-size:20px;font-weight:950;box-shadow:0 8px 24px #e7b24b24}.eyebrow{color:var(--amber);font-size:10px;letter-spacing:.14em;font-weight:900}.brand b{font-size:16px}
+    .page{max-width:1100px;margin:auto;padding:22px 14px 80px}.hero{display:flex;justify-content:space-between;align-items:end;gap:14px}.hero h1{font-size:32px;line-height:1.05;margin:4px 0 0}.sub{color:var(--muted);margin:6px 0 0}
+    .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:850}.primary{background:var(--amber);color:#17130b}.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.danger{background:#3a1d1a;color:#ffaaa0;border:1px solid #63302a}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}.metric,.card{background:linear-gradient(180deg,#1b1d19,#171916);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.metric{padding:16px}.metric .n{font-size:31px;font-weight:950;margin:7px 0}.muted{color:var(--muted)}
+    .card{padding:16px;margin-top:14px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.section-head h2{margin:2px 0 0}.chips{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.chip{white-space:nowrap;border:1px solid var(--line);background:var(--panel2);color:var(--muted);padding:8px 10px;border-radius:999px}.chip.on{background:var(--text);color:#111}
+    table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left}th{font-size:11px;color:var(--muted)}
+    .orders{display:grid;gap:10px;margin-top:12px}.order{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:14px}.order-top{display:flex;justify-content:space-between;gap:10px}.name{font-size:17px;font-weight:900}.tags{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}.tag{font-size:10px;font-weight:900;border-radius:999px;padding:5px 8px;background:#2c2f29}.tag.urgent{color:#ff9d90;background:#52251f}.tag.high{color:#ffc18b;background:#4a2d1f}.tag.ready{color:var(--green);background:#1c3825}.tag.delivery{color:var(--blue);background:#183047}.items{margin:10px 0;line-height:1.65}.meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}.flow{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.flow button{border:1px solid var(--line);background:#121311;color:var(--text);border-radius:9px;padding:7px 8px;font-size:11px}.flow button.on{border-color:var(--amber);color:var(--amber)}.actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+    .empty{text-align:center;color:var(--muted);padding:28px 12px}.auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 0,#e7b24b24,transparent 38%)}.auth-box{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:var(--shadow)}.auth-box h1{margin:8px 0 4px}.stack{display:grid;gap:11px;margin-top:18px}label{display:grid;gap:6px;font-size:12px;color:#d7d8d2}input,select,textarea{width:100%;background:#11120f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--amber)}
+    dialog{width:min(880px,calc(100% - 20px));max-height:92vh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:18px}dialog::backdrop{background:#000b}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item-row{display:grid;grid-template-columns:1.5fr 1fr .65fr 1fr auto;gap:7px;align-items:end;background:#11120f;padding:9px;border-radius:12px;margin:8px 0}.x{width:37px;height:37px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+    .toast{position:fixed;z-index:50;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:#111;padding:10px 14px;border-radius:10px;font-weight:850;box-shadow:var(--shadow)}
+    @media(max-width:720px){.metrics{grid-template-columns:1fr 1fr}.hero{display:grid;align-items:start}.hero .btn{width:100%}.grid{grid-template-columns:1fr}.item-row{grid-template-columns:1fr 1fr}.item-row .x{grid-column:2;justify-self:end}.order-top{align-items:flex-start}.page{padding-top:16px}.hero h1{font-size:28px}}
+  </style>
+</head>
+<body>
+<div id="toast" class="toast hidden"></div>
+<section id="auth" class="auth">
+  <div class="auth-box">
+    <div class="logo">W</div>
+    <div class="eyebrow" style="margin-top:14px">WILDCAT BREWING</div>
+    <h1>Wholesale Manager</h1>
+    <p class="muted">Orders, cans, kegs, preparation and delivery — all in one place.</p>
+    <form id="loginForm" class="stack">
+      <label>Email<input id="email" type="email" autocomplete="email" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary" type="submit">Sign in</button>
+    </form>
+    <p class="muted" style="font-size:11px;text-align:center;margin-top:14px">Wildcat staff access only.</p>
+  </div>
+</section>
+<div id="app" class="hidden">
+  <header class="top"><div class="brand"><div class="logo">W</div><div><div class="eyebrow">WILDCAT BREWING</div><b>Wholesale Manager</b></div></div><button id="logout" class="btn secondary">Sign out</button></header>
+  <main class="page">
+    <div id="blocked" class="card hidden"><h2>Account not approved</h2><p class="muted">This account can sign in, but it is not on the Wildcat staff list yet.</p></div>
+    <div id="main" class="hidden">
+      <section class="hero"><div><div class="eyebrow">DASHBOARD</div><h1>Beer to prepare</h1><p class="sub">Live totals from every active wholesale order.</p></div><button id="newOrder" class="btn primary">＋ New order</button></section>
+      <section id="metrics" class="metrics"></section>
+      <section class="card"><div class="section-head"><div><div class="eyebrow">PRODUCTION</div><h2>Preparation summary</h2></div><button id="refresh" class="btn secondary">Refresh</button></div><div id="prep"></div></section>
+      <section class="card"><div class="section-head"><div><div class="eyebrow">WORKFLOW</div><h2>Active orders</h2></div><div id="chips" class="chips"><button class="chip on" data-filter="all">All</button><button class="chip" data-filter="urgent">Urgent</button><button class="chip" data-filter="not_started">Not started</button><button class="chip" data-filter="preparing">Preparing</button><button class="chip" data-filter="ready">Ready</button><button class="chip" data-filter="out_for_delivery">Delivery</button></div></div><div id="orders" class="orders"></div></section>
+    </div>
+  </main>
+</div>
+<dialog id="orderDialog">
+  <div class="section-head"><div><div class="eyebrow">WHOLESALE ORDER</div><h2 id="dialogTitle">Create order</h2></div><button id="closeDialog" class="x" type="button">✕</button></div>
+  <form id="orderForm" class="stack">
+    <input id="editingId" type="hidden">
+    <div class="grid">
+      <label>Customer<select id="customer" required></select></label>
+      <label>Priority<select id="priority"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label>
+      <label>Delivery date<input id="deliveryDate" type="date"></label>
+      <label>Payment<select id="payment"><option value="pending">Pending</option><option value="partial">Partial</option><option value="paid">Paid</option><option value="not_required">Not required</option></select></label>
+      <label>Delivery method<input id="deliveryMethod" placeholder="Drive / courier / pickup"></label>
+      <label>Assigned to<input id="assignedTo" placeholder="Staff name"></label>
+    </div>
+    <div class="section-head"><b>Beer items</b><button id="addItem" type="button" class="btn secondary">＋ Add item</button></div>
+    <div id="itemRows"></div>
+    <label>Notes<textarea id="notes" rows="3" placeholder="Packing or delivery notes"></textarea></label>
+    <button class="btn primary" type="submit">Save order</button>
+  </form>
+</dialog>
+<dialog id="customerDialog"><div class="section-head"><div><div class="eyebrow">CUSTOMER</div><h2>Add customer</h2></div><button id="closeCustomer" class="x">✕</button></div><form id="customerForm" class="stack"><label>Business name<input id="customerName" required></label><label>Phone<input id="customerPhone"></label><label>Address<input id="customerAddress"></label><label>Delivery notes<textarea id="customerNotes" rows="2"></textarea></label><button class="btn primary">Add customer</button></form></dialog>
+<script>
+const SUPABASE_URL='https://gqbyigliedexvjyxshkb.supabase.co';
+const SUPABASE_KEY='sb_publishable_KWzE2eqCE4FY-15N6E1k6g_ITE7zqHI';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+let beers=[],customers=[],orders=[],prepRows=[],activeFilter='all';
+const flow=['not_started','preparing','ready','out_for_delivery','delivered'];
+const labels={not_started:'Not started',preparing:'Preparing',ready:'Ready',out_for_delivery:'Out for delivery',delivered:'Delivered',on_hold:'On hold',cancelled:'Cancelled'};
+function esc(v=''){return String(v).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.add('hidden'),2600)}
+async function boot(){const {data:{session}}=await db.auth.getSession();if(session) await enter(session);else $('auth').classList.remove('hidden')}
+async function enter(session){$('auth').classList.add('hidden');$('app').classList.remove('hidden');const {data:allowed,error}=await db.from('staff_allowlist').select('email,role,active').ilike('email',session.user.email).maybeSingle();if(error||!allowed||!allowed.active){$('blocked').classList.remove('hidden');return}$('blocked').classList.add('hidden');$('main').classList.remove('hidden');await loadAll()}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)return toast(error.message);await enter(data.session)});
+$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
+async function loadAll(){const [b,c,o,p]=await Promise.all([db.from('beers').select('*').eq('active',true).order('name'),db.from('customers').select('*').eq('active',true).order('name'),db.from('orders').select('*,customers(name),order_items(*,beers(name))').not('status','in','(delivered,cancelled)').order('delivery_date',{ascending:true,nullsFirst:false}),db.from('active_preparation_summary').select('*').order('beer_name')]);const bad=[b,c,o,p].find(x=>x.error);if(bad)return toast(bad.error.message);beers=b.data||[];customers=c.data||[];orders=(o.data||[]).sort((a,b)=>({urgent:0,high:1,normal:2,low:3}[a.priority]-{urgent:0,high:1,normal:2,low:3}[b.priority])||String(a.delivery_date||'9999').localeCompare(String(b.delivery_date||'9999')));prepRows=p.data||[];fillCustomers();render()}
+function render(){const boxes=prepRows.reduce((n,x)=>n+(Number(x.boxes_to_prepare)||0),0),kegs=prepRows.reduce((n,x)=>n+(Number(x.kegs_to_prepare)||0),0),urgent=orders.filter(o=>o.priority==='urgent').length;$('metrics').innerHTML=[["📦",boxes,'Boxes to prepare'],['🛢️',kegs,'Kegs to prepare'],['🚚',orders.length,'Pending orders'],['🔴',urgent,'Urgent orders']].map(x=>`<div class="metric"><div>${x[0]}</div><div class="n">${x[1]}</div><div class="muted">${x[2]}</div></div>`).join('');const pr=prepRows.filter(x=>(Number(x.boxes_to_prepare)||0)||(Number(x.kegs_to_prepare)||0));$('prep').innerHTML=pr.length?`<table><tr><th>Beer</th><th>Boxes</th><th>Cans</th><th>Kegs</th></tr>${pr.map(x=>`<tr><td><b>${esc(x.beer_name)}</b></td><td>${x.boxes_to_prepare||0}</td><td>${x.cans_to_prepare||0}</td><td>${x.kegs_to_prepare||0}</td></tr>`).join('')}</table>`:'<div class="empty">Nothing waiting to be prepared 🎉</div>';renderOrders()}
+function renderOrders(){const list=orders.filter(o=>activeFilter==='all'||(activeFilter==='urgent'?o.priority==='urgent':o.status===activeFilter));$('orders').innerHTML=list.length?list.map(o=>{const items=(o.order_items||[]).map(i=>i.package_type==='can'?`${esc(i.beers?.name||'Beer')} — ${i.quantity} box${i.quantity>1?'es':''} (${i.cans_per_box||12} × ${i.can_size_ml||500} ml)`:`${esc(i.beers?.name||'Beer')} — ${i.quantity} × ${i.keg_size_l||20} L keg${i.quantity>1?'s':''}`).join('<br>');return `<article class="order" data-id="${o.id}"><div class="order-top"><div><div class="name">${esc(o.customers?.name||'Customer')}</div><div class="muted">Order #${o.order_number}${o.delivery_date?' · '+o.delivery_date:''}</div></div><div class="tags"><span class="tag ${o.priority}">${o.priority.toUpperCase()}</span><span class="tag ${o.status==='ready'?'ready':o.status==='out_for_delivery'?'delivery':''}">${labels[o.status]||o.status}</span></div></div><div class="items">${items||'<span class="muted">No items</span>'}</div><div class="meta"><span>Payment: ${esc(o.payment_status)}</span>${o.delivery_method?`<span>Delivery: ${esc(o.delivery_method)}</span>`:''}${o.assigned_to?`<span>Assigned: ${esc(o.assigned_to)}</span>`:''}</div>${o.notes?`<p class="muted">${esc(o.notes)}</p>`:''}<div class="flow">${flow.map(s=>`<button class="${o.status===s?'on':''}" data-status="${s}">${labels[s]}</button>`).join('')}</div><div class="actions"><button class="btn secondary editBtn" type="button">Edit</button><button class="btn danger deleteBtn" type="button">Delete</button></div></article>`}).join(''):'<div class="empty">No orders in this view.</div>';document.querySelectorAll('[data-status]').forEach(b=>b.onclick=()=>changeStatus(b.closest('.order').dataset.id,b.dataset.status));document.querySelectorAll('.editBtn').forEach(b=>b.onclick=()=>openEdit(b.closest('.order').dataset.id));document.querySelectorAll('.deleteBtn').forEach(b=>b.onclick=()=>deleteOrder(b.closest('.order').dataset.id))}
+$('chips').onclick=e=>{const b=e.target.closest('[data-filter]');if(!b)return;activeFilter=b.dataset.filter;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));renderOrders()};
+async function changeStatus(id,status){const patch={status};if(status==='delivered')patch.delivered_at=new Date().toISOString();const {error}=await db.from('orders').update(patch).eq('id',id);if(error)return toast(error.message);toast('Status updated');await loadAll()}
+async function deleteOrder(id){if(!confirm('Delete this order?'))return;const {error}=await db.from('orders').delete().eq('id',id);if(error)return toast(error.message);toast('Order deleted');await loadAll()}
+function fillCustomers(){ $('customer').innerHTML='<option value="">Choose customer</option>'+customers.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')+'<option value="__new">＋ Add new customer</option>' }
+$('customer').onchange=()=>{if($('customer').value==='__new'){$('customer').value='';$('customerDialog').showModal()}};
+$('customerForm').onsubmit=async e=>{e.preventDefault();const {data,error}=await db.from('customers').insert({name:$('customerName').value.trim(),phone:$('customerPhone').value.trim()||null,address:$('customerAddress').value.trim()||null,delivery_notes:$('customerNotes').value.trim()||null}).select().single();if(error)return toast(error.message);customers.push(data);customers.sort((a,b)=>a.name.localeCompare(b.name));fillCustomers();$('customer').value=data.id;$('customerForm').reset();$('customerDialog').close();toast('Customer added')};
+$('closeCustomer').onclick=()=>$('customerDialog').close();
+function addItemRow(data={}){const r=document.createElement('div');r.className='item-row';const pkg=data.package_type||'can';r.innerHTML=`<label>Beer<select class="beerSel">${beers.map(b=>`<option value="${b.id}" ${b.id===data.beer_id?'selected':''}>${esc(b.name)}</option>`).join('')}</select></label><label>Package<select class="pkg"><option value="can" ${pkg==='can'?'selected':''}>Can / box</option><option value="keg" ${pkg==='keg'?'selected':''}>Keg</option></select></label><label>Qty<input class="qty" type="number" min="1" value="${data.quantity||1}"></label><label class="extraLabel">${pkg==='keg'?'Keg size L':'Cans / box'}<input class="extra" type="number" min="1" value="${pkg==='keg'?(data.keg_size_l||20):(data.cans_per_box||12)}"></label><button class="x" type="button">✕</button>`;r.querySelector('.pkg').onchange=()=>{const keg=r.querySelector('.pkg').value==='keg';r.querySelector('.extraLabel').childNodes[0].nodeValue=keg?'Keg size L':'Cans / box';r.querySelector('.extra').value=keg?20:12};r.querySelector('.x').onclick=()=>r.remove();$('itemRows').appendChild(r)}
+function resetOrderForm(){ $('orderForm').reset();$('editingId').value='';$('dialogTitle').textContent='Create order';$('priority').value='normal';$('payment').value='pending';$('itemRows').innerHTML='';addItemRow() }
+$('newOrder').onclick=()=>{resetOrderForm();$('orderDialog').showModal()};$('closeDialog').onclick=()=>$('orderDialog').close();$('addItem').onclick=()=>addItemRow();
+function openEdit(id){const o=orders.find(x=>x.id===id);if(!o)return;resetOrderForm();$('editingId').value=o.id;$('dialogTitle').textContent=`Edit order #${o.order_number}`;$('customer').value=o.customer_id;$('priority').value=o.priority;$('payment').value=o.payment_status;$('deliveryDate').value=o.delivery_date||'';$('deliveryMethod').value=o.delivery_method||'';$('assignedTo').value=o.assigned_to||'';$('notes').value=o.notes||'';$('itemRows').innerHTML='';(o.order_items||[]).forEach(addItemRow);if(!(o.order_items||[]).length)addItemRow();$('orderDialog').showModal()}
+$('orderForm').onsubmit=async e=>{e.preventDefault();if(!$('customer').value)return toast('Choose a customer');const session=(await db.auth.getSession()).data.session;const id=$('editingId').value;const base={customer_id:$('customer').value,priority:$('priority').value,payment_status:$('payment').value,delivery_date:$('deliveryDate').value||null,delivery_method:$('deliveryMethod').value.trim()||null,assigned_to:$('assignedTo').value.trim()||null,notes:$('notes').value.trim()||null};let orderId=id;if(id){const {error}=await db.from('orders').update(base).eq('id',id);if(error)return toast(error.message);await db.from('order_items').delete().eq('order_id',id)}else{base.created_by=session?.user?.id||null;const {data,error}=await db.from('orders').insert(base).select().single();if(error)return toast(error.message);orderId=data.id}const rows=[...document.querySelectorAll('.item-row')];if(!rows.length)return toast('Add at least one beer item');const items=rows.map(r=>{const pkg=r.querySelector('.pkg').value,qty=Number(r.querySelector('.qty').value),extra=Number(r.querySelector('.extra').value);return pkg==='can'?{order_id:orderId,beer_id:r.querySelector('.beerSel').value,package_type:'can',quantity:qty,can_size_ml:500,cans_per_box:extra,keg_size_l:null}:{order_id:orderId,beer_id:r.querySelector('.beerSel').value,package_type:'keg',quantity:qty,can_size_ml:null,cans_per_box:null,keg_size_l:extra}});const {error}=await db.from('order_items').insert(items);if(error)return toast(error.message);$('orderDialog').close();toast(id?'Order updated':'Order created');await loadAll()};
+$('refresh').onclick=loadAll;
+boot();
+</script>
+</body>
+</html>
