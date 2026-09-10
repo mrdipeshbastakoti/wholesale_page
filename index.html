@@ -16,12 +16,10 @@
 
 <section id="auth" class="auth hidden">
   <div class="auth-box">
-    <div class="auth-logo-wrap">
-      <img class="auth-logo" src="./assets/images/wildcat-logo.png" alt="Wildcat Beer Co. logo" />
-    </div>
-    <div class="eyebrow" style="text-align:center">WILDCAT BREWING</div>
+    <div class="auth-logo-wrap"><img class="auth-logo" src="./assets/images/wildcat-logo.png" alt="Wildcat Beer Co. logo" /></div>
+    <div class="eyebrow centered">WILDCAT BREWING</div>
     <h1>Wholesale Manager</h1>
-    <p class="muted">Orders, cans, kegs, preparation and delivery — all in one place.</p>
+    <p class="muted centered">Orders, beer, sales, customers, cans, kegs and delivery — all in one place.</p>
     <form id="loginForm" class="stack">
       <label>Email<input id="email" type="email" autocomplete="email" required></label>
       <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
@@ -36,76 +34,89 @@
     <div class="topbar-inner">
       <div class="brand">
         <img class="brand-logo" src="./assets/images/wildcat-logo.png" alt="Wildcat Beer Co. logo" />
-        <div>
-          <div class="eyebrow">WILDCAT BREWING</div>
-          <div class="brand-title">Wholesale Manager</div>
-          <div class="brand-sub">Dynamic order dashboard</div>
-        </div>
+        <div><div class="eyebrow">WILDCAT BREWING</div><div class="brand-title">Wholesale Manager</div><div class="brand-sub">Orders • Production • Sales</div></div>
       </div>
       <button id="logout" class="btn secondary">Sign out</button>
     </div>
+    <nav id="mainNav" class="main-nav">
+      <button class="nav-btn active" data-page="overview">Overview</button>
+      <button class="nav-btn" data-page="orders">Orders</button>
+      <button class="nav-btn" data-page="sales">Sales</button>
+      <button class="nav-btn" data-page="beers">Beers</button>
+      <button class="nav-btn" data-page="customers">Customers</button>
+    </nav>
   </header>
 
   <main class="page">
-    <div id="blocked" class="card hidden">
-      <h2>Account not approved</h2>
-      <p class="muted">This account can sign in, but it is not on the Wildcat staff list yet.</p>
-    </div>
+    <div id="blocked" class="card hidden"><h2>Account not approved</h2><p class="muted">This account can sign in, but it is not on the Wildcat staff list yet.</p></div>
 
     <div id="main" class="hidden">
-      <section class="hero">
-        <div>
-          <div class="eyebrow">DASHBOARD</div>
-          <h1>Beer to prepare</h1>
-          <p class="sub">Live totals from every active wholesale order.</p>
-        </div>
-        <button id="newOrder" class="btn primary">＋ New order</button>
+      <section id="page-overview" class="app-page active">
+        <section class="hero">
+          <div><div class="eyebrow">DASHBOARD</div><h1>Wholesale at a glance</h1><p class="sub">Live preparation and delivery status from active orders.</p></div>
+          <button class="btn primary js-new-order">＋ New order</button>
+        </section>
+        <section id="metrics" class="metrics"></section>
+        <section class="card">
+          <div class="section-head"><div><div class="eyebrow">PRODUCTION</div><h2>Beer to prepare</h2></div><button id="refresh" class="btn secondary">Refresh</button></div>
+          <div id="prep"></div>
+        </section>
+        <section class="card">
+          <div class="section-head"><div><div class="eyebrow">NEXT UP</div><h2>Priority orders</h2></div><button class="btn secondary js-go-orders">View all orders</button></div>
+          <div id="priorityOrders" class="orders"></div>
+        </section>
       </section>
 
-      <section id="metrics" class="metrics"></section>
-
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">PRODUCTION</div>
-            <h2>Preparation summary</h2>
+      <section id="page-orders" class="app-page">
+        <section class="hero">
+          <div><div class="eyebrow">WORKFLOW</div><h1>Orders</h1><p class="sub">Create, prioritize, prepare, deliver and search wholesale orders.</p></div>
+          <button class="btn primary js-new-order">＋ New order</button>
+        </section>
+        <section class="card compact-card">
+          <div class="toolbar">
+            <input id="orderSearch" class="search" type="search" placeholder="Search customer or beer…" />
+            <div id="chips" class="chips">
+              <button class="chip on" data-filter="all">All</button><button class="chip" data-filter="urgent">Urgent</button><button class="chip" data-filter="not_started">Not started</button><button class="chip" data-filter="preparing">Preparing</button><button class="chip" data-filter="ready">Ready</button><button class="chip" data-filter="out_for_delivery">Delivery</button><button class="chip" data-filter="on_hold">On hold</button><button class="chip" data-filter="delivered">Delivered</button>
+            </div>
           </div>
-          <button id="refresh" class="btn secondary">Refresh</button>
-        </div>
-        <div id="prep"></div>
+          <div id="orders" class="orders"></div>
+        </section>
       </section>
 
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">WORKFLOW</div>
-            <h2>Active orders</h2>
-          </div>
-          <div id="chips" class="chips">
-            <button class="chip on" data-filter="all">All</button>
-            <button class="chip" data-filter="urgent">Urgent</button>
-            <button class="chip" data-filter="not_started">Not started</button>
-            <button class="chip" data-filter="preparing">Preparing</button>
-            <button class="chip" data-filter="ready">Ready</button>
-            <button class="chip" data-filter="out_for_delivery">Delivery</button>
-            <button class="chip" data-filter="on_hold">On hold</button>
-          </div>
-        </div>
-        <div id="orders" class="orders"></div>
+      <section id="page-sales" class="app-page">
+        <section class="hero">
+          <div><div class="eyebrow">ANALYTICS</div><h1>Sales overview</h1><p class="sub">See how much beer Wildcat has sold through completed wholesale orders.</p></div>
+          <select id="salesPeriod" class="period-select"><option value="all">All time</option><option value="month">This month</option><option value="30">Last 30 days</option><option value="year">This year</option></select>
+        </section>
+        <section id="salesMetrics" class="metrics sales-metrics"></section>
+        <section class="grid-two">
+          <div class="card"><div class="eyebrow">BY BEER</div><h2>Beer sales</h2><div id="salesByBeer"></div></div>
+          <div class="card"><div class="eyebrow">BY CUSTOMER</div><h2>Top customers</h2><div id="salesByCustomer"></div></div>
+        </section>
+        <section class="card"><div class="section-head"><div><div class="eyebrow">HISTORY</div><h2>Recent delivered orders</h2></div><button id="exportSales" class="btn secondary">Export CSV</button></div><div id="salesHistory"></div><p class="hint">Revenue is calculated only for order items where a unit price was entered.</p></section>
+      </section>
+
+      <section id="page-beers" class="app-page">
+        <section class="hero">
+          <div><div class="eyebrow">CATALOG</div><h1>Beer management</h1><p class="sub">Add new beers, edit defaults, archive old beers and restore them later.</p></div>
+          <button id="newBeer" class="btn primary">＋ Add beer</button>
+        </section>
+        <section class="card"><div class="section-head"><h2>Beer list</h2><label class="inline-check"><input id="showArchivedBeers" type="checkbox"> Show archived</label></div><div id="beerList" class="management-list"></div></section>
+      </section>
+
+      <section id="page-customers" class="app-page">
+        <section class="hero">
+          <div><div class="eyebrow">ACCOUNTS</div><h1>Customers</h1><p class="sub">Wholesale accounts with order counts and lifetime sales.</p></div>
+          <button id="newCustomer" class="btn primary">＋ Add customer</button>
+        </section>
+        <section class="card"><div class="toolbar"><input id="customerSearch" class="search" type="search" placeholder="Search customers…" /></div><div id="customerList" class="management-list"></div></section>
       </section>
     </div>
   </main>
 </div>
 
 <dialog id="orderDialog">
-  <div class="section-head">
-    <div>
-      <div class="eyebrow">WHOLESALE ORDER</div>
-      <h2 id="dialogTitle">Create order</h2>
-    </div>
-    <button id="closeDialog" class="x" type="button">✕</button>
-  </div>
-
+  <div class="section-head"><div><div class="eyebrow">WHOLESALE ORDER</div><h2 id="dialogTitle">Create order</h2></div><button id="closeDialog" class="x" type="button">✕</button></div>
   <form id="orderForm" class="stack">
     <input id="editingId" type="hidden">
     <div class="grid">
@@ -117,15 +128,7 @@
       <label>Assigned to<input id="assignedTo" placeholder="Staff name"></label>
       <label>Status<select id="orderStatus"><option value="not_started">Not started</option><option value="preparing">Preparing</option><option value="ready">Ready</option><option value="out_for_delivery">Out for delivery</option><option value="on_hold">On hold</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select></label>
     </div>
-
-    <div class="section-head">
-      <b>Beer items</b>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="openCustomer" type="button" class="btn secondary">＋ Add customer</button>
-        <button id="addItem" type="button" class="btn secondary">＋ Add item</button>
-      </div>
-    </div>
-
+    <div class="section-head"><b>Beer items</b><div class="button-row"><button id="openCustomer" type="button" class="btn secondary">＋ Add customer</button><button id="addItem" type="button" class="btn secondary">＋ Add item</button></div></div>
     <div id="itemRows"></div>
     <label>Notes<textarea id="notes" rows="3" placeholder="Packing or delivery notes"></textarea></label>
     <button class="btn primary" type="submit">Save order</button>
@@ -133,21 +136,21 @@
 </dialog>
 
 <dialog id="customerDialog">
-  <div class="section-head">
-    <div>
-      <div class="eyebrow">CUSTOMER</div>
-      <h2>Add customer</h2>
-    </div>
-    <button id="closeCustomer" class="x" type="button">✕</button>
-  </div>
-
+  <div class="section-head"><div><div class="eyebrow">CUSTOMER</div><h2 id="customerDialogTitle">Add customer</h2></div><button id="closeCustomer" class="x" type="button">✕</button></div>
   <form id="customerForm" class="stack">
-    <label>Business name<input id="customerName" required></label>
-    <label>Contact name<input id="customerContact"></label>
-    <label>Phone<input id="customerPhone"></label>
-    <label>Address<input id="customerAddress"></label>
-    <label>Delivery notes<textarea id="customerNotes" rows="2"></textarea></label>
-    <button class="btn primary" type="submit">Add customer</button>
+    <input id="editingCustomerId" type="hidden">
+    <label>Business name<input id="customerName" required></label><label>Contact name<input id="customerContact"></label><label>Phone<input id="customerPhone"></label><label>Email<input id="customerEmail" type="email"></label><label>Address<input id="customerAddress"></label><label>Delivery notes<textarea id="customerNotes" rows="2"></textarea></label><button class="btn primary" type="submit">Save customer</button>
+  </form>
+</dialog>
+
+<dialog id="beerDialog">
+  <div class="section-head"><div><div class="eyebrow">BEER</div><h2 id="beerDialogTitle">Add beer</h2></div><button id="closeBeer" class="x" type="button">✕</button></div>
+  <form id="beerForm" class="stack">
+    <input id="editingBeerId" type="hidden">
+    <label>Beer name<input id="beerName" required placeholder="e.g. Ghost Note"></label>
+    <div class="grid"><label>Default can size (ml)<input id="beerCanSize" type="number" min="1" value="500"></label><label>Default cans per box<input id="beerBoxSize" type="number" min="1" value="12"></label></div>
+    <label>Notes<textarea id="beerNotes" rows="3" placeholder="Style, packaging notes, etc."></textarea></label>
+    <button class="btn primary" type="submit">Save beer</button>
   </form>
 </dialog>
 </body>
