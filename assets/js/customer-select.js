@@ -89,7 +89,7 @@
 })();
 
 (function(){
-  function createRecoveryDialog(){
+  function createPasswordDialog(){
     if (document.getElementById('passwordRecoveryDialog')) return document.getElementById('passwordRecoveryDialog');
 
     const dialog = document.createElement('dialog');
@@ -97,6 +97,7 @@
     dialog.innerHTML = `
       <div class="section-head">
         <div><div class="eyebrow">WILDCAT BREWING</div><h2>Set a new password</h2></div>
+        <button id="closePasswordDialog" class="x" type="button">✕</button>
       </div>
       <p class="muted">Choose the password you want to use with the Staff ID <b>WildcatBrewing</b>.</p>
       <form id="passwordRecoveryForm" class="stack">
@@ -106,6 +107,8 @@
         <button class="btn primary" type="submit">Save new password</button>
       </form>`;
     document.body.appendChild(dialog);
+
+    document.getElementById('closePasswordDialog').addEventListener('click', () => dialog.close());
 
     document.getElementById('passwordRecoveryForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -145,19 +148,42 @@
     return dialog;
   }
 
-  function openRecoveryDialog(){
-    const dialog = createRecoveryDialog();
+  function openPasswordDialog(){
+    const dialog = createPasswordDialog();
+    document.getElementById('recoveryPassword').value = '';
+    document.getElementById('recoveryPasswordConfirm').value = '';
+    document.getElementById('recoveryMessage').textContent = '';
+    const saveButton = document.querySelector('#passwordRecoveryForm button[type="submit"]');
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent = 'Save new password';
+    }
     if (!dialog.open) {
       try { dialog.showModal(); } catch (_) {}
     }
   }
 
+  function addChangePasswordButton(){
+    if (document.getElementById('changePassword')) return;
+    const logout = document.getElementById('logout');
+    if (!logout) return;
+    const button = document.createElement('button');
+    button.id = 'changePassword';
+    button.type = 'button';
+    button.className = 'btn secondary';
+    button.textContent = 'Change password';
+    button.addEventListener('click', openPasswordDialog);
+    logout.parentNode.insertBefore(button, logout);
+  }
+
   window.addEventListener('load', () => {
+    addChangePasswordButton();
+
     const looksLikeRecovery = window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery');
-    if (looksLikeRecovery) openRecoveryDialog();
+    if (looksLikeRecovery) openPasswordDialog();
 
     supa.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') openRecoveryDialog();
+      if (event === 'PASSWORD_RECOVERY') openPasswordDialog();
     });
   });
 })();
